@@ -1,0 +1,8 @@
+#ifndef ACTIONS
+#define ACTIONS
+#include"login.h"
+
+void adminMenu(int , userData );
+void serveClient(int, userData);
+void addUser(userData client);
+#endif

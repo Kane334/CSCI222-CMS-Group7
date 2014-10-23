@@ -1,0 +1,14 @@
+//#ifndef LOGIN
+#define LOGIN
+#include<vector>
+#include<string>
+#include"users.h"
+//namespace login {
+using namespace std; 
+
+
+bool Login();
+bool searchUser(userData &);
+bool dbSetup();
+
+//#endif

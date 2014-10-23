@@ -1,0 +1,125 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include<cstdlib>
+#include"actions.h"
+#include"users.h"
+#include<cstring>
+#include<fstream>
+int PAPERLIMIT=4;
+int REVIEWLIMIT=4;
+using namespace std;
+void clientAdd(int, userData);
+void submitPapers(userData);
+void adminMenu(userData client)
+{
+	bool loggedOut=false;
+	while(loggedOut==false)
+	{
+		char choice;
+		cout << "Welcome to the Admin Menu, " << client.userN << endl;
+		cout << "Would you like to: " << endl;
+		cout << "0. Create new user. " << endl;
+		cout << "1. Delete user. " << endl;
+		cout << "Or would you like to change to a different menu?: " << endl;
+		cout << "2. Manage" << endl;
+		cout << "3. review system: " << endl;
+		cout << "4. submit " << endl;
+		cout << "5. logout " <<endl << endl;
+		cout << "Input: ";
+		cin >> choice;
+		switch(choice)
+		{
+			case '0':
+				addUser( client);
+				break;
+			case '1':
+				break;
+			case '2'://manage/allocate
+				break;
+			case '3':
+				break;
+			case '4': //submitPaper(client);
+				break;
+			case '5':
+				cout << "5" << endl;
+				loggedOut=true;
+				break;
+			default: cout << "Invalid choice: " << endl;
+				break;
+		}
+		//cout << "\033[2J" << endl;
+	}
+	
+
+}
+void submitPaper(userData client)
+{
+
+
+}
+void addUser (userData client)
+{
+	bool loggedOut=false;
+	string userN,userP, again, priv, temp;
+	vector<string> keyTemp;
+	while(loggedOut==false)
+	{
+		//cout << "\033[2J" << endl;
+		userData newClient;
+		cout << "Please enter a username: ";
+		cin >> userN;
+		cout << "Please enter password: ";
+		cin >> userP;
+		cout << "Enter their privelages ";
+		cin >> priv;
+		cout << "Enter keywords, enter -1 to stop" << endl;
+		cin >> temp;
+		while(temp!="-1")
+		{
+			keyTemp.push_back(temp);
+			cin>>temp;
+		}
+		newClient.userN=userN;
+		newClient.userP=userP;
+		newClient.priv=atoi(priv.c_str());
+		newClient.expertise.assign(keyTemp.begin(),keyTemp.end());
+		newClient=searchUser(newClient);
+		if(newClient.userN!="-1")
+		{
+			cout << "Invalid user details, enter another y/n? " << endl;
+			cin >> again;
+			if(again=="n")
+				loggedOut=false;	
+		}
+		else
+		{
+			newClient.userN=userN;
+			listClass newUser;
+			newUser.listUser.push_back(newClient);
+			if(newClient.priv==2)
+			{
+				PC newPCClient;
+				newPCClient=newClient;	
+				newPCClient.PCID=newUser.listPC.size();	
+				newUser.listPC.push_back(newPCClient);
+
+			}
+			else if(newClient.priv==4)
+			{
+				Author newAuthorClient;
+				newAuthorClient=newClient;			
+				newUser.listAuthor.push_back(newAuthorClient);
+			}
+			/*ofstream out;
+			out.open("userList.dat",ios::ate | ios::app);
+			out << newClient.userN << " " << newClient.userP << " " << newClient.priv << endl;
+			out.close();*/
+			cout << "Enter another y/n? " << endl;
+			cin >> again;
+			if(again=="n")
+				loggedOut=true;
+		}
+	}
+}
+

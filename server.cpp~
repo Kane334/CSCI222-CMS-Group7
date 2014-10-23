@@ -1,0 +1,99 @@
+#include "wrappers.h"
+//#include"login.h"
+#include"actions.h"
+#include <sys/wait.h>  
+extern "C" void SigChldHandler( int Signum );
+using namespace std;
+int main()
+{
+	cout << "Server started" << endl;
+	const int MAXLINE = 5;
+	int n;
+	int fd[2];
+	pid_t pid;
+	char line[100]={'0'};
+	int Sockfd, NewSockfd, ClntLen;
+	sockaddr_in ClntAddr, ServAddr;
+	int yes=1;
+	int Port = SERV_TCP_PORT;
+	char String[MAX_BUFFER];
+	int Len;	
+	unsigned short EchoServPort;
+
+	Sockfd = Socket(AF_INET, SOCK_STREAM, 0); 
+
+	memset((char*)&ServAddr, 0, sizeof(ServAddr));
+	ServAddr.sin_family = AF_INET;
+	ServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	ServAddr.sin_port = htons(Port);
+	setsockopt(Sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes));
+	Bind(Sockfd, (sockaddr*) &ServAddr, sizeof(ServAddr));	
+	Listen(Sockfd, 5);
+	signal(SIGCHLD, SigChldHandler);
+	
+	bool setup=serverSetup(); //checks server has relevant files, if not prompts to make them
+	if(setup==false)
+		return -1;
+	cout << "Server started" << endl;
+	for(;;)
+	{
+		ClntLen = sizeof(ClntAddr);
+		NewSockfd = Accept(Sockfd, (sockaddr *) &ClntAddr, (socklen_t*)&ClntLen);
+		if ((pid = fork()) < 0)
+		{
+			cout << "BAD FORK" << endl;
+			perror("fork() failed");
+			exit(1);
+		}
+		if (pid == 0)
+		{  
+			cout << "2" << endl;			
+			close(Sockfd);   
+			serverLogin(NewSockfd);
+			//if(loggedIn==true)
+			//	serveClient(NewSockfd);
+			exit(1);           
+		}
+
+		close(NewSockfd);      
+	}
+}
+bool serverSetup()
+{
+	fstream master;
+	master.open("userList.dat");
+	if(!master.good())
+	{
+		char choice, y='y';
+		cout << "No user list detected, create admin user, y/n? : ";		//White box testing invalid chars
+		cin >> choice;
+		if(choice=='y')
+		{
+
+			string userN, userP;
+			cout <<"Please enter a username: ";
+			cin >>userN;
+			cout << "Please enter a password: ";
+			cin >>userP;
+			ofstream out;
+			out.open("userList.dat");
+			out << userN << " " << userP << " " << "0" << endl;
+			out.close();
+		}
+		else
+		{
+			cout << "Cannot continue without an admin user, exiting..." << endl;
+			return false;
+		}
+		master.close();
+	}
+	return true;
+}
+extern "C" void SigChldHandler( int Signum )
+{
+// Catch SIGCHLD signals so child processes don't become zombies.
+	pid_t pid;
+	int stat;
+	while((pid = waitpid(-1, &stat, WNOHANG)) > 0 );
+	return;
+}
